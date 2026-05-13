@@ -144,7 +144,107 @@
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
 }
+[data-sonner-toaster] [data-sonner-toast] {
+    background: var(--card) !important;
 
+    color: var(--card-foreground) !important;
+
+    border: 1px solid var(--border) !important;
+
+    border-radius: 18px !important;
+
+    box-shadow: var(--shadow) !important;
+
+    backdrop-filter: blur(16px);
+
+    font-family: var(--font-sans);
+}
+
+/* Description */
+[data-sonner-toast] [data-description] {
+    color: var(--muted-foreground) !important;
+}
+
+/* Success */
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] {
+    background: color-mix(in srgb, var(--accent) 12%, var(--card)) !important;
+
+    border-color: color-mix(
+        in srgb,
+        var(--accent) 28%,
+        var(--border)
+    ) !important;
+
+    color: var(--foreground) !important;
+}
+
+/* Error */
+[data-sonner-toaster] [data-sonner-toast][data-type='error'] {
+    background: color-mix(in srgb, var(--error) 12%, var(--card)) !important;
+
+    border-color: color-mix(
+        in srgb,
+        var(--error) 32%,
+        var(--border)
+    ) !important;
+
+    color: var(--foreground) !important;
+}
+
+/* Warning */
+[data-sonner-toaster] [data-sonner-toast][data-type='warning'] {
+    background: color-mix(in srgb, var(--main) 14%, var(--card)) !important;
+
+    border-color: color-mix(in srgb, var(--main) 30%, var(--border)) !important;
+
+    color: var(--foreground) !important;
+}
+
+/* Info */
+[data-sonner-toaster] [data-sonner-toast][data-type='info'] {
+    background: color-mix(
+        in srgb,
+        var(--secondary) 92%,
+        var(--card)
+    ) !important;
+
+    border-color: var(--border) !important;
+
+    color: var(--foreground) !important;
+}
+
+/* Action button */
+[data-sonner-toast] [data-button] {
+    background: var(--main) !important;
+
+    color: var(--main-foreground) !important;
+
+    border-radius: 999px !important;
+
+    border: none !important;
+
+    font-weight: 600;
+}
+
+/* Cancel button */
+[data-sonner-toast] [data-cancel] {
+    background: var(--secondary) !important;
+
+    color: var(--secondary-foreground) !important;
+
+    border: 1px solid var(--border) !important;
+
+    border-radius: 999px !important;
+}
+
+/* Close button */
+[data-sonner-toast] [data-close-button] {
+    background: var(--secondary-background) !important;
+
+    border-color: var(--border) !important;
+
+    color: var(--foreground) !important;
+}
 @layer base {
     * {
         scrollbar-width: thin;

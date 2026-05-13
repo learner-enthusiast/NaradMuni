@@ -1,8 +1,9 @@
-import { AlertTriangle } from 'lucide-react'
 import { BuilderPreview } from '../components/builder/builder-preview'
 import { PollSettingsForm } from '../components/builder/poll-settings-form'
 import { QuestionCard } from '../components/builder/question-card'
 import { useCreatePolls } from '../hooks/use-createPolls'
+import { useEffect } from 'react'
+import { toast } from 'sonner'
 
 export function CreatePolls() {
     const {
@@ -18,6 +19,28 @@ export function CreatePolls() {
         removeOption,
         submit,
     } = useCreatePolls()
+    useEffect(() => {
+        if (!error) return
+
+        let parsedError = error
+
+        if (typeof error === 'string') {
+            try {
+                parsedError = JSON.parse(error)
+            } catch {
+                toast.error(error)
+                return
+            }
+        }
+
+        if (Array.isArray(parsedError)) {
+            toast.error(parsedError[0].message)
+
+            return
+        }
+
+        toast.error(parsedError?.message || 'Something went wrong')
+    }, [error])
 
     return (
         <main className="db-root">
@@ -31,13 +54,6 @@ export function CreatePolls() {
                         </p>
                     </div>
                 </div>
-
-                {error ? (
-                    <div className="db-error mb-4 flex items-center gap-2">
-                        <AlertTriangle className="size-4" />
-                        {error}
-                    </div>
-                ) : null}
 
                 <section className="db-grid">
                     <div className="space-y-4">
