@@ -23,7 +23,7 @@ export function Header() {
                     >
                         {/* <Vote className="size-6" /> */}
                         <img
-                            src="../../../public/NARAD.png"
+                            src="/NARAD.png"
                             alt="NARADMUNI"
                             className="size-12"
                         />

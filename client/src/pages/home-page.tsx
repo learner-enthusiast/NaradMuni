@@ -324,10 +324,7 @@ export function HomePage() {
                             </div>
 
                             <div className="hp-card-icon">
-                                <img
-                                    src="../../public/NARAD.png"
-                                    alt="naradMuni"
-                                />
+                                <img src="/NARAD.png" alt="naradMuni" />
                             </div>
                         </div>
 
