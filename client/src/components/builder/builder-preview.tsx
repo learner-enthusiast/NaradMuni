@@ -1,12 +1,14 @@
-import { Clock, Plus, Radio, Sparkles, UserCheck } from 'lucide-react'
+import { Clock, Loader2, Plus, Radio, Sparkles, UserCheck } from 'lucide-react'
 import type { PollBuilderState } from '../../hooks/use-createPolls'
 import { formatDate } from '../../lib/poll-utils'
 import { PreviewRow } from '../ui/preview-row'
 type Props = {
     form: PollBuilderState
     addQuestion: () => void
+    saving: boolean
+    submit: () => void
 }
-export function BuilderPreview({ form, addQuestion }: Props) {
+export function BuilderPreview({ form, addQuestion, saving, submit }: Props) {
     return (
         <aside className="builder-preview lg:sticky lg:top-24 lg:self-start">
             <div className="premium-analytics-card p-5">
@@ -53,6 +55,17 @@ export function BuilderPreview({ form, addQuestion }: Props) {
                     onClick={addQuestion}
                 >
                     <Plus className="size-4" /> Add question
+                </button>
+                <button
+                    className="neo-button bg-main"
+                    disabled={saving}
+                    onClick={submit}
+                    type="button"
+                >
+                    {saving ? (
+                        <Loader2 className="size-4 animate-spin" />
+                    ) : null}
+                    {saving ? 'Publishing...' : 'Create Sabha'}
                 </button>
             </div>
         </aside>

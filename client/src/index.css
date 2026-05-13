@@ -146,6 +146,29 @@
 }
 
 @layer base {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--main) transparent;
+    }
+
+    /* Chrome, Edge, Safari */
+    *::-webkit-scrollbar {
+        width: 16px;
+        height: 8px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background-color: var(--main);
+        border-radius: 9999px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        opacity: 0.8;
+    }
     body {
         @apply font-base text-foreground;
 
@@ -221,7 +244,7 @@
     }
 
     .brand-mark {
-        @apply grid place-items-center border border-main bg-main text-main-foreground shadow-shadow;
+        @apply grid place-items-center border border-main bg-main text-main-foreground shadow-shadow cursor-pointer;
     }
 
     .neo-panel {
@@ -326,7 +349,7 @@
     }
 
     .hp-poll-grid {
-        @apply grid gap-4 lg:grid-cols-2;
+        @apply flex flex-col gap-4 max-h-[800px] overflow-y-auto;
     }
 
     .hp-hero {

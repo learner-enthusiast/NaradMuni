@@ -1,4 +1,4 @@
-import { AlertTriangle, Loader2, Plus } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { BuilderPreview } from '../components/builder/builder-preview'
 import { PollSettingsForm } from '../components/builder/poll-settings-form'
 import { QuestionCard } from '../components/builder/question-card'
@@ -30,19 +30,6 @@ export function CreatePolls() {
                             options for your poll.
                         </p>
                     </div>
-                    <div className="db-head-actions">
-                        <button
-                            className="neo-button bg-main"
-                            disabled={saving}
-                            onClick={submit}
-                            type="button"
-                        >
-                            {saving ? (
-                                <Loader2 className="size-4 animate-spin" />
-                            ) : null}
-                            {saving ? 'Publishing...' : 'Create Sabha'}
-                        </button>
-                    </div>
                 </div>
 
                 {error ? (
@@ -72,7 +59,12 @@ export function CreatePolls() {
                             />
                         ))}
                     </div>
-                    <BuilderPreview form={form} addQuestion={addQuestion} />
+                    <BuilderPreview
+                        form={form}
+                        addQuestion={addQuestion}
+                        saving={saving}
+                        submit={submit}
+                    />
                 </section>
             </div>
         </main>

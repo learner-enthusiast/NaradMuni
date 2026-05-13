@@ -1,6 +1,5 @@
 import { SignUpButton } from '@clerk/react'
 import {
-    Activity,
     Eye,
     Loader2,
     Plus,
@@ -114,7 +113,7 @@ export function HomePage() {
         document
             .getElementById('workspace')
             ?.scrollIntoView({ behavior: 'smooth' })
-    const key = hindiTransalation ? 'hi' : 'en'
+
     return (
         <main className="hp-root ">
             <div className="hp-layout">

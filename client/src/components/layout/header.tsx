@@ -15,10 +15,12 @@ export function Header() {
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5">
                 <button
                     className="flex items-center gap-3 text-left"
-                    onClick={() => navigate('/')}
                     type="button"
                 >
-                    <span className="brand-mark size-11">
+                    <span
+                        className="brand-mark size-11"
+                        onClick={() => navigate('/')}
+                    >
                         {/* <Vote className="size-6" /> */}
                         <img
                             src="../../../public/NARAD.png"
@@ -26,15 +28,37 @@ export function Header() {
                             className="size-12"
                         />
                     </span>
-                    <span>
-                        <span className="block text-xl font-black leading-none tracking-tight">
+                    <span onClick={() => navigate('/')}>
+                        <span className="block text-xl font-black leading-none tracking-tight cursor-pointer">
                             NARADMUNI
                         </span>
                         <span className="block text-xs font-black uppercase tracking-[0.16em] text-muted-foreground">
                             live polling
                         </span>
                     </span>
+                    <button
+                        aria-label={
+                            isDark
+                                ? 'Switch to light mode'
+                                : 'Switch to dark mode'
+                        }
+                        className="icon-button"
+                        onClick={toggleTheme}
+                        title={
+                            isDark
+                                ? 'Switch to light mode'
+                                : 'Switch to dark mode'
+                        }
+                        type="button"
+                    >
+                        {isDark ? (
+                            <Sun className="size-4" />
+                        ) : (
+                            <Moon className="size-4" />
+                        )}
+                    </button>
                 </button>
+
                 <nav className="hidden items-center gap-2 md:flex">
                     <NavLink
                         className={({ isActive }) =>
@@ -64,27 +88,6 @@ export function Header() {
                     ) : null}
                 </nav>
                 <div className="flex items-center gap-2 ">
-                    <button
-                        aria-label={
-                            isDark
-                                ? 'Switch to light mode'
-                                : 'Switch to dark mode'
-                        }
-                        className="icon-button"
-                        onClick={toggleTheme}
-                        title={
-                            isDark
-                                ? 'Switch to light mode'
-                                : 'Switch to dark mode'
-                        }
-                        type="button"
-                    >
-                        {isDark ? (
-                            <Sun className="size-4" />
-                        ) : (
-                            <Moon className="size-4" />
-                        )}
-                    </button>
                     <SignedOutView>
                         <SignInButton mode="modal">
                             <button
