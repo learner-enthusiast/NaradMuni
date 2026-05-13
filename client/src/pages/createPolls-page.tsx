@@ -22,24 +22,39 @@ export function CreatePolls() {
     useEffect(() => {
         if (!error) return
 
-        let parsedError = error
+        try {
+            const parsed: unknown = JSON.parse(error)
 
-        if (typeof error === 'string') {
-            try {
-                parsedError = JSON.parse(error)
-            } catch {
-                toast.error(error)
+            // Zod-style array: [{ message: "..." }, ...]
+            if (
+                Array.isArray(parsed) &&
+                parsed.length > 0 &&
+                typeof parsed[0] === 'object' &&
+                parsed[0] !== null &&
+                'message' in parsed[0] &&
+                typeof (parsed[0] as any).message === 'string'
+            ) {
+                toast.error((parsed[0] as any).message)
                 return
             }
+
+            // Generic object: { message: "..." }
+            if (
+                typeof parsed === 'object' &&
+                parsed !== null &&
+                'message' in parsed &&
+                typeof (parsed as any).message === 'string'
+            ) {
+                toast.error((parsed as any).message)
+                return
+            }
+
+            // Fallback if JSON parses but shape isn't what you expect
+            toast.error(error)
+        } catch {
+            // Not JSON, just show the string
+            toast.error(error)
         }
-
-        if (Array.isArray(parsedError)) {
-            toast.error(parsedError[0].message)
-
-            return
-        }
-
-        toast.error(parsedError?.message || 'Something went wrong')
     }, [error])
 
     return (
