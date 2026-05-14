@@ -1,12 +1,4 @@
-import {
-    Clock,
-    Loader2,
-    Plus,
-    Radio,
-    Sparkles,
-    UserCheck,
-    X,
-} from 'lucide-react'
+import { Clock, Loader2, Plus, Radio, UserCheck, X } from 'lucide-react'
 import type { PollBuilderState } from '../../hooks/use-createPolls'
 import { formatDate } from '../../lib/poll-utils'
 import { PreviewRow } from '../ui/preview-row'
@@ -47,7 +39,7 @@ export function BuilderPreview({
         <aside className="builder-preview lg:sticky lg:top-24 lg:self-start">
             <div className="premium-analytics-card p-5">
                 <div className="mb-5 flex items-center gap-2 text-main">
-                    <Sparkles className="size-5" />
+                    <img src="/KARTAL.png" className="size-5" />
                     <span className="font-black uppercase tracking-[0.16em]">
                         Preview
                     </span>
@@ -103,7 +95,7 @@ export function BuilderPreview({
                 </button>
             </div>
             {form.coverPhoto && (
-                <div className="relative w-full overflow-hidden rounded-md border-2 border-black">
+                <div className="relative w-full overflow-hidden rounded-md border-2 border-black mt-5">
                     <img
                         src={form.coverPhoto}
                         alt="Cover photo preview"
@@ -113,7 +105,7 @@ export function BuilderPreview({
                         type="button"
                         disabled={removing}
                         onClick={() => void onRemove()}
-                        className="absolute right-2 top-2 flex items-center gap-1 rounded-md border-2 border-black bg-white px-2 py-1 text-xs font-bold shadow-[2px_2px_0px_black] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-50"
+                        className="btn-remove"
                     >
                         {removing ? (
                             <Loader2 className="size-3 animate-spin" />

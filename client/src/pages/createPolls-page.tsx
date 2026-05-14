@@ -64,7 +64,7 @@ export function CreatePolls() {
             <div className="db-layout">
                 <div className="db-page-head">
                     <div>
-                        <h1 className="db-title">Build Sabha</h1>
+                        <h1 className="db-title">Create Sabha</h1>
                         <p className="db-desc">
                             Set up questions, response rules, and sharing
                             options for your poll.

@@ -37,7 +37,7 @@ export function DashboardPage() {
     const [exporting, setExporting] = useState(false)
     const [responses, setResponses] = useState<ResponseDetail[]>([])
     usePollSocket(pollId)
-    console.log(analytics)
+
     useEffect(() => {
         if (!pollId) return
         let mounted = true
@@ -211,6 +211,7 @@ export function DashboardPage() {
                         <h1 className="db-title">{activePoll.title}</h1>
                         <p className="db-desc">{activePoll.description}</p>
                     </div>
+
                     <div className="db-head-actions">
                         <CopyPublicLinkButton
                             url={shareUrl}
@@ -278,7 +279,15 @@ export function DashboardPage() {
                         </button>
                     </div>
                 </div>
-
+                {activePoll?.coverPhoto && (
+                    <div className="my-10 w-full">
+                        <img
+                            src={activePoll?.coverPhoto}
+                            className="w-full h-80"
+                            alt=""
+                        />
+                    </div>
+                )}
                 {/* ── Metrics ── */}
                 <div className="db-metrics">
                     <DashboardMetric

@@ -1,4 +1,4 @@
-import { Eye, Loader2, ShieldCheck, X } from 'lucide-react'
+import { Eye, Loader2, ShieldCheck } from 'lucide-react'
 import type { PollBuilderState } from '../../hooks/use-createPolls'
 import { Field } from '../ui/field'
 import { Toggle } from '../ui/toggle'
@@ -22,7 +22,6 @@ export function PollSettingsForm({
 }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [uploading, setUploading] = useState(false)
-    const [removing, setRemoving] = useState(false)
 
     const onPickFile = async (file: File) => {
         setUploading(true)
@@ -41,17 +40,6 @@ export function PollSettingsForm({
         }
     }
 
-    const onRemove = async () => {
-        if (!form.coverPhoto) return
-        setRemoving(true)
-        try {
-            await deleteCoverPhoto(form.coverPhoto)
-            updateField('coverPhoto', null)
-            if (inputRef.current) inputRef.current.value = ''
-        } finally {
-            setRemoving(false)
-        }
-    }
     return (
         <div className="neo-panel grid gap-4 p-5">
             <Field label="Title">
@@ -82,48 +70,7 @@ export function PollSettingsForm({
                     }
                 />
             </Field>
-            <div className="grid gap-4 md:grid-cols-3">
-                <Field label="Category">
-                    <input
-                        className="neo-input"
-                        value={form.category}
-                        onChange={(event) =>
-                            updateField('category', event.target.value)
-                        }
-                    />
-                </Field>
-                <Field label="Tags">
-                    <input
-                        className="neo-input"
-                        value={form.tags}
-                        onChange={(event) =>
-                            updateField('tags', event.target.value)
-                        }
-                    />
-                </Field>
-                <Field label="Cover photo">
-                    <div className="grid gap-2">
-                        <input
-                            ref={inputRef}
-                            className="neo-input"
-                            type="file"
-                            accept="image/*"
-                            disabled={uploading || removing}
-                            onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) onPickFile(file)
-                            }}
-                        />
 
-                        {uploading ? (
-                            <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                                <Loader2 className="size-4 animate-spin" />
-                                Uploading…
-                            </div>
-                        ) : null}
-                    </div>
-                </Field>
-            </div>
             <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Expiry">
                     <input
@@ -147,6 +94,56 @@ export function PollSettingsForm({
                     label="Live public results"
                     onChange={(value) => updateField('showLiveResults', value)}
                 />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+                <Field label="Category">
+                    <input
+                        className="neo-input"
+                        value={form.category}
+                        onChange={(event) =>
+                            updateField('category', event.target.value)
+                        }
+                    />
+                </Field>
+                <Field label="Tags">
+                    <input
+                        className="neo-input"
+                        value={form.tags}
+                        onChange={(event) =>
+                            updateField('tags', event.target.value)
+                        }
+                    />
+                </Field>
+                <Field label="Cover photo">
+                    <div className="grid gap-2">
+                        {!form.coverPhoto ? (
+                            <>
+                                {!uploading && (
+                                    <input
+                                        ref={inputRef}
+                                        className="neo-input cursor-pointer"
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={uploading}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file) onPickFile(file)
+                                        }}
+                                    />
+                                )}
+
+                                {uploading ? (
+                                    <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                                        <Loader2 className="size-4 animate-spin" />
+                                        Uploading…
+                                    </div>
+                                ) : null}
+                            </>
+                        ) : (
+                            <div>Image Uploaded</div>
+                        )}
+                    </div>
+                </Field>
             </div>
             <Field label="Completion message">
                 <input

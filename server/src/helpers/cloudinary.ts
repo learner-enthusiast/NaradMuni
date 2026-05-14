@@ -7,6 +7,11 @@ cloudinary.config({
 })
 
 export async function uploadToCloudinary(filePath: string): Promise<string> {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    })
     const result = await cloudinary.uploader.upload(filePath, {
         folder: 'polls/covers',
         upload_preset:
@@ -22,6 +27,10 @@ export async function deleteFromCloudinary(url: string): Promise<void> {
     const matches = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i)
     if (!matches?.[1])
         throw new Error(`Could not parse public_id from URL: ${url}`)
-
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    })
     await cloudinary.uploader.destroy(matches[1])
 }

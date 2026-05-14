@@ -102,7 +102,7 @@ export function Header() {
                                 className="neo-button bg-main"
                                 type="button"
                             >
-                                Start
+                                Sign Up
                             </button>
                         </SignUpButton>
                     </SignedOutView>

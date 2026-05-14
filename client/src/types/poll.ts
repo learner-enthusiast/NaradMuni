@@ -21,7 +21,7 @@ export type Poll = {
     description: string | null
     category: string
     tags: string[]
-
+    coverPhoto: string | null
     completionMessage: string
     status: 'draft' | 'active' | 'closed' | 'expired' | 'published'
     isAnonymous: boolean
