@@ -2,7 +2,7 @@ import { Clock, Loader2, Plus, Radio, UserCheck, X } from 'lucide-react'
 import type { PollBuilderState } from '../../hooks/use-createPolls'
 import { formatDate } from '../../lib/poll-utils'
 import { PreviewRow } from '../ui/preview-row'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 type Props = {
     form: PollBuilderState
     addQuestion: () => void
@@ -13,6 +13,7 @@ type Props = {
         key: Key,
         value: PollBuilderState[Key]
     ) => void
+    removing: boolean
 }
 export function BuilderPreview({
     form,
@@ -21,18 +22,19 @@ export function BuilderPreview({
     submit,
     deleteCoverPhoto,
     updateField,
+    removing,
 }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null)
-    const [removing, setRemoving] = useState(false)
+
     const onRemove = async () => {
         if (!form.coverPhoto) return
-        setRemoving(true)
+
         try {
             await deleteCoverPhoto(form.coverPhoto)
             updateField('coverPhoto', null)
             if (inputRef.current) inputRef.current.value = ''
-        } finally {
-            setRemoving(false)
+        } catch (e) {
+            console.log(e)
         }
     }
     return (

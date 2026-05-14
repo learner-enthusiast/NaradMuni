@@ -19,6 +19,8 @@ export function useCreatePolls() {
     )
     const [error, setError] = useState('')
     const [saving, setSaving] = useState(false)
+    const [uploading, setUploading] = useState(false)
+    const [removing, setRemoving] = useState(false)
 
     const updateField = <Key extends keyof PollBuilderState>(
         key: Key,
@@ -105,19 +107,31 @@ export function useCreatePolls() {
         )
     }
     const uploadCoverPhoto = async (file: File) => {
-        const formData = new FormData()
+        try {
+            const formData = new FormData()
+            setUploading(true)
+            formData.append('coverPhoto', file)
 
-        formData.append('coverPhoto', file)
-
-        const data = await api.postForm<{ url: string }>(
-            '/api/poll/cover-photo',
-            formData
-        )
-        return data.url
+            const data = await api.postForm<{ url: string }>(
+                '/api/poll/cover-photo',
+                formData
+            )
+            return data.url
+        } catch (err) {
+            setError(getApiError(err, 'Could not upload photo'))
+        } finally {
+            setUploading(false)
+        }
     }
 
     const deleteCoverPhoto = async (url: string) => {
-        await api.post('/api/poll/cover-photo/delete', { url })
+        try {
+            await api.post('/api/poll/cover-photo/delete', { url })
+        } catch (err) {
+            setError(getApiError(err, 'Could not remove photo'))
+        } finally {
+            setRemoving(false)
+        }
     }
     const submit = async () => {
         setError('')
@@ -149,5 +163,7 @@ export function useCreatePolls() {
         submit,
         uploadCoverPhoto,
         deleteCoverPhoto,
+        uploading,
+        removing,
     }
 }

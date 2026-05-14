@@ -2,7 +2,7 @@ import { Eye, Loader2, ShieldCheck } from 'lucide-react'
 import type { PollBuilderState } from '../../hooks/use-createPolls'
 import { Field } from '../ui/field'
 import { Toggle } from '../ui/toggle'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 type Props = {
     form: PollBuilderState
@@ -12,6 +12,7 @@ type Props = {
     ) => void
     uploadCoverPhoto: (file: File) => Promise<string>
     deleteCoverPhoto: (url: string) => Promise<void>
+    uploading: boolean
 }
 
 export function PollSettingsForm({
@@ -19,12 +20,11 @@ export function PollSettingsForm({
     updateField,
     uploadCoverPhoto,
     deleteCoverPhoto,
+    uploading,
 }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null)
-    const [uploading, setUploading] = useState(false)
 
     const onPickFile = async (file: File) => {
-        setUploading(true)
         try {
             const previousUrl = form.coverPhoto
             const url = await uploadCoverPhoto(file)
@@ -35,7 +35,6 @@ export function PollSettingsForm({
                 await deleteCoverPhoto(previousUrl)
             }
         } finally {
-            setUploading(false)
             if (inputRef.current) inputRef.current.value = ''
         }
     }

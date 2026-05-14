@@ -1,5 +1,5 @@
 import { SignInButton, SignUpButton, UserButton } from '@clerk/react'
-import { Moon, Plus, Sun, Vote, Zap } from 'lucide-react'
+import { Moon, Plus, Sun } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { SignedInView, SignedOutView } from '../auth/auth-views'
 import { useTheme } from '../../hooks/use-theme'

@@ -20,6 +20,8 @@ export function CreatePolls() {
         submit,
         uploadCoverPhoto,
         deleteCoverPhoto,
+        removing,
+        uploading,
     } = useCreatePolls()
     useEffect(() => {
         if (!error) return
@@ -79,6 +81,7 @@ export function CreatePolls() {
                             updateField={updateField}
                             uploadCoverPhoto={uploadCoverPhoto}
                             deleteCoverPhoto={deleteCoverPhoto}
+                            uploading={uploading}
                         />
                         {form.questions.map((question, index) => (
                             <QuestionCard
@@ -101,6 +104,7 @@ export function CreatePolls() {
                         submit={submit}
                         deleteCoverPhoto={deleteCoverPhoto}
                         updateField={updateField}
+                        removing={removing}
                     />
                 </section>
             </div>
