@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1778484648460,
-      "tag": "0000_left_doorman",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1778500000000,
-      "tag": "0001_add_closed_poll_status",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1778520000000,
-      "tag": "0002_add_user_roles",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1778584548376,
-      "tag": "0003_faulty_post",
+      "when": 1778727199395,
+      "tag": "0000_strange_peter_parker",
       "breakpoints": true
     }
   ]

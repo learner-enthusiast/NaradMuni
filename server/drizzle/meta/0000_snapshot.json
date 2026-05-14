@@ -1,5 +1,5 @@
 {
-  "id": "2ca98994-5fbb-44e2-bdde-862ee797a422",
+  "id": "83c72065-4bbb-4fa8-af16-ce89e5fe2ac4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -591,6 +591,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "role": {
+          "name": "role",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'creator'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -637,6 +644,7 @@
       "values": [
         "draft",
         "active",
+        "closed",
         "expired",
         "published"
       ]

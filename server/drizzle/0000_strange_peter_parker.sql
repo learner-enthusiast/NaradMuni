@@ -1,4 +1,4 @@
-CREATE TYPE "public"."poll_status" AS ENUM('draft', 'active', 'expired', 'published');--> statement-breakpoint
+CREATE TYPE "public"."poll_status" AS ENUM('draft', 'active', 'closed', 'expired', 'published');--> statement-breakpoint
 CREATE TYPE "public"."question_type" AS ENUM('single_choice', 'image_choice');--> statement-breakpoint
 CREATE TABLE "polls" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -56,6 +56,7 @@ CREATE TABLE "users" (
 	"clerk_user_id" varchar(255) NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"email" varchar(255) NOT NULL,
+	"role" varchar(40) DEFAULT 'creator' NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_clerk_user_id_unique" UNIQUE("clerk_user_id"),
