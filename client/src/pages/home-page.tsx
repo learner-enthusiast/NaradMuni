@@ -327,7 +327,36 @@ export function HomePage() {
                                 <img src="/NARAD.png" alt="naradMuni" />
                             </div>
                         </div>
+                        <div className="hp-analytics">
+                            <div className="hp-analytics-header">
+                                <span className="hp-analytics-title">
+                                    Living insights
+                                </span>
 
+                                <span className="hp-pill">
+                                    <Zap size={10} /> flowing now
+                                </span>
+                            </div>
+                        </div>
+                        {[
+                            'Future direction',
+                            'Sacred identity',
+                            'Community pulse',
+                        ].map((item, i) => (
+                            <div className="hp-bar-row" key={item}>
+                                <div className="hp-bar-label">
+                                    <span>{item}</span>
+                                    <span>{44 - i * 17}%</span>
+                                </div>
+
+                                <div className="hp-bar-track">
+                                    <div
+                                        className="hp-bar-fill"
+                                        style={{ width: `${44 - i * 17}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
                         <div className="hp-metrics">
                             <ThemeMetric
                                 icon={<Vote size={12} />}
@@ -346,38 +375,6 @@ export function HomePage() {
                                 label="Flow"
                                 value="Alive"
                             />
-                        </div>
-
-                        <div className="hp-analytics">
-                            <div className="hp-analytics-header">
-                                <span className="hp-analytics-title">
-                                    Living insights
-                                </span>
-
-                                <span className="hp-pill">
-                                    <Zap size={10} /> flowing now
-                                </span>
-                            </div>
-
-                            {[
-                                'Future direction',
-                                'Sacred identity',
-                                'Community pulse',
-                            ].map((item, i) => (
-                                <div className="hp-bar-row" key={item}>
-                                    <div className="hp-bar-label">
-                                        <span>{item}</span>
-                                        <span>{82 - i * 17}%</span>
-                                    </div>
-
-                                    <div className="hp-bar-track">
-                                        <div
-                                            className="hp-bar-fill"
-                                            style={{ width: `${82 - i * 17}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </div>
                 </section>

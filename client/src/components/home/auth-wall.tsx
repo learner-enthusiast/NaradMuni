@@ -9,8 +9,8 @@ export function AuthWall() {
                     Sign in to Create your own Sabha
                 </h3>
                 <p className="mt-2 text-sm font-semibold leading-7 text-muted-foreground">
-                    Powers creator accounts, protected dashboards, and
-                    authenticated response mode.
+                    Protects creator Sabhas, safeguards living conversations,
+                    and ensures every voice carries authenticity.
                 </p>
             </div>
             <SignInButton mode="modal">
