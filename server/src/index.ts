@@ -11,6 +11,7 @@ import { env } from './env'
 import { initIO } from './lib/socket'
 import { errorHandler } from './lib/http'
 import { startPollExpiryJob } from './jobs/expire-polls'
+import morganMiddleware from './logger/morgan.logger'
 
 const app = express()
 const server = createServer(app)
@@ -32,9 +33,11 @@ async function main() {
             credentials: true,
         })
     )
+
     app.use(clerkMiddleware())
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
+    app.use(morganMiddleware)
 
     app.get('/health', (req, res) => {
         return res.send("I'm up and running")

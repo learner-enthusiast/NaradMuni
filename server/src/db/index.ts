@@ -13,4 +13,9 @@ const pool = new Pool({
         : false,
 })
 
-export const db: NodePgDatabase = drizzle(pool)
+export const db: NodePgDatabase = drizzle(pool, {
+    logger: true,
+})
+
+// vmMF7wOH1ALi8FUd
+// learner-enthusiast's Project
