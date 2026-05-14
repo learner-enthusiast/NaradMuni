@@ -119,6 +119,7 @@ export function useCreatePolls() {
             return data.url
         } catch (err) {
             setError(getApiError(err, 'Could not upload photo'))
+            throw err
         } finally {
             setUploading(false)
         }

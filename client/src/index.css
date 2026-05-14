@@ -280,7 +280,7 @@
                 rgba(255, 248, 235, 0.74),
                 rgba(255, 244, 220, 0.84)
             ),
-            url('../public/NARADLIGHTBG.png');
+            url('../NARADLIGHTBG.png');
 
         background-size: cover;
         background-position: center;
