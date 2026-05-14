@@ -18,6 +18,8 @@ export function CreatePolls() {
         updateOption,
         removeOption,
         submit,
+        uploadCoverPhoto,
+        deleteCoverPhoto,
     } = useCreatePolls()
     useEffect(() => {
         if (!error) return
@@ -75,6 +77,8 @@ export function CreatePolls() {
                         <PollSettingsForm
                             form={form}
                             updateField={updateField}
+                            uploadCoverPhoto={uploadCoverPhoto}
+                            deleteCoverPhoto={deleteCoverPhoto}
                         />
                         {form.questions.map((question, index) => (
                             <QuestionCard
@@ -95,6 +99,8 @@ export function CreatePolls() {
                         addQuestion={addQuestion}
                         saving={saving}
                         submit={submit}
+                        deleteCoverPhoto={deleteCoverPhoto}
+                        updateField={updateField}
                     />
                 </section>
             </div>

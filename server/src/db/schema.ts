@@ -56,10 +56,9 @@ export const pollsTable = pgTable(
         category: varchar('category', { length: 120 })
             .default('general')
             .notNull(),
-        tags: text('tags').default('[]').notNull(), // JSON string -> string[]
-        accentColor: varchar('accent_color', { length: 40 })
-            .default('#B6FF3B')
-            .notNull(),
+        tags: text('tags').default('[]').notNull(),
+        coverPhoto: varchar('cover_photo', { length: 2048 }),
+
         completionMessage: text('completion_message')
             .default('Your response has been recorded. Thanks for weighing in.')
             .notNull(),
@@ -74,11 +73,11 @@ export const pollsTable = pgTable(
             .notNull()
             .$onUpdate(() => new Date()),
     },
-    (table) => ({
-        createdByIdx: index('polls_created_by_idx').on(table.createdBy),
-        statusIdx: index('polls_status_idx').on(table.status),
-        slugIdx: uniqueIndex('polls_slug_idx').on(table.slug),
-    })
+    (t) => [
+        index('polls_created_by_idx').on(t.createdBy),
+        index('polls_status_idx').on(t.status),
+        uniqueIndex('polls_slug_idx').on(t.slug),
+    ]
 )
 
 // ─── JSONB Types ──────────────────────────────────────────────────────────────
@@ -102,14 +101,12 @@ export const questionsTable = pgTable(
         questionType: questionTypeEnum('question_type')
             .default('single_choice')
             .notNull(),
-        options: text('options').notNull(), // JSON string → QuestionOption[]
+        options: text('options').notNull(),
         isMandatory: boolean('is_mandatory').default(true).notNull(),
         displayOrder: integer('display_order').default(0).notNull(),
         createdAt: timestamp('created_at').defaultNow().notNull(),
     },
-    (table) => ({
-        pollIdIdx: index('questions_poll_id_idx').on(table.pollId),
-    })
+    (t) => [index('questions_poll_id_idx').on(t.pollId)]
 )
 
 // ─── Responses ────────────────────────────────────────────────────────────────
@@ -131,13 +128,14 @@ export const responsesTable = pgTable(
         submittedAt: timestamp('submitted_at').defaultNow().notNull(),
         createdAt: timestamp('created_at').defaultNow().notNull(),
     },
-    (table) => ({
-        pollIdIdx: index('responses_poll_id_idx').on(table.pollId),
-        userIdIdx: index('responses_user_id_idx').on(table.userId),
-        oneResponsePerUserPerPoll: uniqueIndex(
-            'one_response_per_user_per_poll_idx'
-        ).on(table.pollId, table.userId),
-    })
+    (t) => [
+        index('responses_poll_id_idx').on(t.pollId),
+        index('responses_user_id_idx').on(t.userId),
+        uniqueIndex('one_response_per_user_per_poll_idx').on(
+            t.pollId,
+            t.userId
+        ),
+    ]
 )
 
 // ─── Question Responses ───────────────────────────────────────────────────────
@@ -155,11 +153,12 @@ export const questionResponsesTable = pgTable(
         selectedOptionId: varchar('selected_option_id', { length: 255 }),
         answeredAt: timestamp('answered_at').defaultNow().notNull(),
     },
-    (table) => ({
-        questionIdIdx: index('qr_question_id_idx').on(table.questionId),
-        responseIdIdx: index('qr_response_id_idx').on(table.responseId),
-        oneAnswerPerQuestionPerResponse: uniqueIndex(
-            'one_answer_per_question_per_response_idx'
-        ).on(table.responseId, table.questionId),
-    })
+    (t) => [
+        index('qr_question_id_idx').on(t.questionId),
+        index('qr_response_id_idx').on(t.responseId),
+        uniqueIndex('one_answer_per_question_per_response_idx').on(
+            t.responseId,
+            t.questionId
+        ),
+    ]
 )

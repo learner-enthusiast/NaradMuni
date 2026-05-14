@@ -14,7 +14,7 @@
         "esModuleInterop": true,
         "resolveJsonModule": true,
 
-        "types": ["bun"],
+        "types": ["bun", "node"],
 
         "noEmit": false
     },

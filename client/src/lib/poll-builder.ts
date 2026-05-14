@@ -7,7 +7,8 @@ export type PollBuilderState = {
     description: string
     category: string
     tags: string
-    accentColor: string
+    coverPhoto: string | null
+
     expiresAt: string
     isAnonymous: boolean
     showLiveResults: boolean
@@ -44,7 +45,7 @@ export function createInitialPollBuilderState(): PollBuilderState {
             'Gather thoughts, perspectives, and voices from across the world.',
         category: 'Conversation',
         tags: 'wisdom, voices, community',
-        accentColor: '#D97706',
+        coverPhoto: null,
         expiresAt: '',
         isAnonymous: true,
         showLiveResults: true,
@@ -60,11 +61,12 @@ export function toCreatePollPayload(form: PollBuilderState) {
         customSlug: form.customSlug || undefined,
         description: form.description,
         category: form.category,
+        coverPhoto: form.coverPhoto,
         tags: form.tags
             .split(',')
             .map((tag) => tag.trim())
             .filter(Boolean),
-        accentColor: form.accentColor,
+
         completionMessage: form.completionMessage,
         expiresAt: form.expiresAt
             ? new Date(form.expiresAt).toISOString()

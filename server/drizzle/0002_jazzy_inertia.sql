@@ -1,0 +1,1 @@
+ALTER TABLE "polls" ADD COLUMN "cover_photo" varchar(2048);

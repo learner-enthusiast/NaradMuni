@@ -1,14 +1,48 @@
-import { Clock, Loader2, Plus, Radio, Sparkles, UserCheck } from 'lucide-react'
+import {
+    Clock,
+    Loader2,
+    Plus,
+    Radio,
+    Sparkles,
+    UserCheck,
+    X,
+} from 'lucide-react'
 import type { PollBuilderState } from '../../hooks/use-createPolls'
 import { formatDate } from '../../lib/poll-utils'
 import { PreviewRow } from '../ui/preview-row'
+import { useRef, useState } from 'react'
 type Props = {
     form: PollBuilderState
     addQuestion: () => void
     saving: boolean
     submit: () => void
+    deleteCoverPhoto: (url: string) => Promise<void>
+    updateField: <Key extends keyof PollBuilderState>(
+        key: Key,
+        value: PollBuilderState[Key]
+    ) => void
 }
-export function BuilderPreview({ form, addQuestion, saving, submit }: Props) {
+export function BuilderPreview({
+    form,
+    addQuestion,
+    saving,
+    submit,
+    deleteCoverPhoto,
+    updateField,
+}: Props) {
+    const inputRef = useRef<HTMLInputElement | null>(null)
+    const [removing, setRemoving] = useState(false)
+    const onRemove = async () => {
+        if (!form.coverPhoto) return
+        setRemoving(true)
+        try {
+            await deleteCoverPhoto(form.coverPhoto)
+            updateField('coverPhoto', null)
+            if (inputRef.current) inputRef.current.value = ''
+        } finally {
+            setRemoving(false)
+        }
+    }
     return (
         <aside className="builder-preview lg:sticky lg:top-24 lg:self-start">
             <div className="premium-analytics-card p-5">
@@ -68,6 +102,28 @@ export function BuilderPreview({ form, addQuestion, saving, submit }: Props) {
                     {saving ? 'Publishing...' : 'Create Sabha'}
                 </button>
             </div>
+            {form.coverPhoto && (
+                <div className="relative w-full overflow-hidden rounded-md border-2 border-black">
+                    <img
+                        src={form.coverPhoto}
+                        alt="Cover photo preview"
+                        className="h-48 w-full object-cover"
+                    />
+                    <button
+                        type="button"
+                        disabled={removing}
+                        onClick={() => void onRemove()}
+                        className="absolute right-2 top-2 flex items-center gap-1 rounded-md border-2 border-black bg-white px-2 py-1 text-xs font-bold shadow-[2px_2px_0px_black] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-50"
+                    >
+                        {removing ? (
+                            <Loader2 className="size-3 animate-spin" />
+                        ) : (
+                            <X className="size-3" />
+                        )}
+                        {removing ? 'Removing…' : 'Remove'}
+                    </button>
+                </div>
+            )}
         </aside>
     )
 }

@@ -30,6 +30,12 @@ import {
     serializePoll,
 } from './poll.service.js'
 import { createPollInput, submitPollInput } from './poll.validation.js'
+import {
+    deleteFromCloudinary,
+    uploadToCloudinary,
+} from '../../helpers/cloudinary.js'
+import { unlink } from 'node:fs/promises'
+import z from 'zod'
 
 export async function listPolls(req: Request, res: Response) {
     const user = await requireSessionUser(req)
@@ -85,7 +91,8 @@ export async function createPoll(req: Request, res: Response) {
                 description: input.description || null,
                 category: input.category,
                 tags: JSON.stringify(input.tags),
-                accentColor: input.accentColor,
+                coverPhoto: input.coverPhoto || null,
+
                 completionMessage: input.completionMessage,
                 isAnonymous: input.isAnonymous,
                 showLiveResults: input.showLiveResults,
@@ -258,7 +265,7 @@ export async function duplicatePoll(req: Request, res: Response) {
                 description: loaded.poll.description,
                 category: loaded.poll.category,
                 tags: loaded.poll.tags,
-                accentColor: loaded.poll.accentColor,
+                coverPhoto: loaded.poll.coverPhoto,
                 completionMessage: loaded.poll.completionMessage,
                 status: 'draft',
                 isAnonymous: loaded.poll.isAnonymous,
@@ -651,4 +658,32 @@ export async function currentUser(req: Request, res: Response) {
     const auth = getAuth(req)
     if (!auth.userId) return res.json({ user: null })
     return res.json({ user: await requireSessionUser(req) })
+}
+export async function uploadCoverPhoto(req: Request, res: Response) {
+    await requireSessionUser(req)
+
+    const file = req.file
+    if (!file?.path) throw new HttpError(400, 'coverPhoto file is required')
+
+    try {
+        const url = await uploadToCloudinary(file.path)
+        return res.status(201).json({ url })
+    } catch (err) {
+        console.log(err)
+        throw new HttpError(500, `Failed to upload cover photo ${err}`)
+    } finally {
+        await unlink(file.path).catch(() => {})
+    }
+}
+const deleteCoverPhotoInput = z.object({
+    url: z.string().url(),
+})
+
+export async function deleteCoverPhoto(req: Request, res: Response) {
+    await requireSessionUser(req)
+
+    const { url } = deleteCoverPhotoInput.parse(req.body)
+    await deleteFromCloudinary(url)
+
+    return res.status(204).send()
 }

@@ -13,7 +13,10 @@ import {
     publishPoll,
     reopenPoll,
     submitPoll,
+    uploadCoverPhoto,
+    deleteCoverPhoto,
 } from './poll.controller.js'
+import { upload } from '../../middlewares/multer.middleware.js'
 
 export const pollRouter = Router()
 
@@ -29,3 +32,9 @@ pollRouter.post('/:id/duplicate', asyncHandler(duplicatePoll))
 pollRouter.get('/:id', asyncHandler(getOwnedPoll))
 pollRouter.get('/:id/analytics', asyncHandler(getAnalytics))
 pollRouter.post('/:id/publish', asyncHandler(publishPoll))
+pollRouter.post(
+    '/cover-photo',
+    upload.single('coverPhoto'),
+    asyncHandler(uploadCoverPhoto)
+)
+pollRouter.post('/cover-photo/delete', asyncHandler(deleteCoverPhoto))
