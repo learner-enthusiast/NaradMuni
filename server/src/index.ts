@@ -16,9 +16,13 @@ import morganMiddleware from './logger/morgan.logger.js'
 const app = express()
 const server = createServer(app)
 
+const clientOrigins = env.CLIENT.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
 // ── Export io so controllers can use getIO() ──────────────
 const io = new Server(server, {
-    cors: { origin: env.CLIENT },
+    cors: { origin: clientOrigins },
 })
 
 initIO(io)
@@ -29,7 +33,7 @@ async function main() {
 
     app.use(
         cors({
-            origin: env.CLIENT,
+            origin: clientOrigins,
             credentials: true,
         })
     )
