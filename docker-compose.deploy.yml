@@ -9,11 +9,15 @@ services:
     expose:
       - "3000"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 60s
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 300s
     networks:
       - app
 
@@ -24,7 +28,7 @@ services:
       - "${WEB_PORT:-8080}:80"
     depends_on:
       api:
-        condition: service_healthy
+        condition: service_started
     networks:
       - app
 

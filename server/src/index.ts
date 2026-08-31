@@ -38,7 +38,6 @@ async function main() {
         })
     )
 
-    app.use(clerkMiddleware())
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
     app.use(morganMiddleware)
@@ -49,6 +48,8 @@ async function main() {
     app.get('/', (req, res) => {
         return res.send('NARADMUNI-APP')
     })
+
+    app.use(clerkMiddleware())
 
     app.use('/api/user', userRouter)
     app.use('/api/poll', pollRouter)
