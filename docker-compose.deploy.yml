@@ -8,6 +8,12 @@ services:
       NODE_ENV: production
     expose:
       - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     networks:
       - app
 
@@ -17,7 +23,8 @@ services:
     ports:
       - "${WEB_PORT:-8080}:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - app
 

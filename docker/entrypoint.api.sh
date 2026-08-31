@@ -3,7 +3,10 @@ set -eu
 
 if [ -n "${DATABASE_URL:-}" ]; then
   echo "Running database migrations..."
-  npx drizzle-kit migrate
+  npx drizzle-kit migrate --config=drizzle.config.js
+else
+  echo "WARNING: DATABASE_URL is not set; skipping migrations."
 fi
 
+echo "Starting API server..."
 exec node dist/src/index.js
