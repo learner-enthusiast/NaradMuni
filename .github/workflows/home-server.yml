@@ -1,0 +1,210 @@
+# Deploy NaradMuni to a home server via GHCR + SSH (Cloudflare Access).
+#
+# Required GitHub repository secrets:
+#   SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, DEPLOY_PATH
+#   CF_SERVICE_TOKEN_ID, CF_SERVICE_TOKEN_SECRET
+#   GHCR_TOKEN                         (PAT with read:packages, for the home server to pull)
+#   DATABASE_URL                       (external Postgres connection string)
+#   CLIENT_URL                         (public URL, e.g. https://sabha.example.com or http://192.168.1.10:8080)
+#   CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY
+#   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_UPLOAD_PRESET
+#
+# Optional secrets:
+#   ADMIN_EMAILS                       (comma-separated admin emails)
+#   WEB_PORT                           (defaults to 8080 on the server)
+#
+# One-time on the server: ensure Docker + Docker Compose plugin are installed.
+
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE: ghcr.io/${{ github.repository_owner }}/naradmuni-api
+  WEB_IMAGE: ghcr.io/${{ github.repository_owner }}/naradmuni-web
+
+jobs:
+  build-and-push:
+    name: Build and push to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.api
+          push: true
+          tags: |
+            ${{ env.API_IMAGE }}:latest
+            ${{ env.API_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=naradmuni-api
+          cache-to: type=gha,mode=max,scope=naradmuni-api
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.web
+          push: true
+          build-args: |
+            VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+            VITE_PUBLIC_APP_URL=${{ secrets.CLIENT_URL }}
+            VITE_API_URL=
+          tags: |
+            ${{ env.WEB_IMAGE }}:latest
+            ${{ env.WEB_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=naradmuni-web
+          cache-to: type=gha,mode=max,scope=naradmuni-web
+
+  deploy:
+    name: Deploy to home server
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      CF_SERVICE_TOKEN_ID: ${{ secrets.CF_SERVICE_TOKEN_ID }}
+      CF_SERVICE_TOKEN_SECRET: ${{ secrets.CF_SERVICE_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cloudflared
+        run: |
+          curl -L --fail \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
+            -o cloudflared.deb
+          sudo dpkg -i cloudflared.deb || sudo apt-get install -f -y
+
+      - name: Export Cloudflare service token for cloudflared
+        run: |
+          set -euo pipefail
+          {
+            echo "TUNNEL_SERVICE_TOKEN_ID<<EOF"
+            echo "$CF_SERVICE_TOKEN_ID"
+            echo "EOF"
+            echo "TUNNEL_SERVICE_TOKEN_SECRET<<EOF"
+            echo "$CF_SERVICE_TOKEN_SECRET"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          cat > ~/.ssh/config <<EOF
+          Host homeserver
+            HostName ${SSH_HOST}
+            User ${SSH_USER}
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            ProxyCommand cloudflared access ssh --hostname %h
+            StrictHostKeyChecking accept-new
+            ConnectTimeout 30
+          EOF
+
+          chmod 600 ~/.ssh/config
+
+      - name: Create production env file
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CLIENT_URL: ${{ secrets.CLIENT_URL }}
+          CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_UPLOAD_PRESET: ${{ secrets.CLOUDINARY_UPLOAD_PRESET }}
+          ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+          WEB_PORT: ${{ secrets.WEB_PORT }}
+        run: |
+          set -euo pipefail
+          umask 077
+          {
+            printf 'GHCR_OWNER=%s\n' "${{ github.repository_owner }}"
+            printf 'DATABASE_URL=%s\n' "$DATABASE_URL"
+            printf 'CLIENT=%s\n' "$CLIENT_URL"
+            printf 'CLERK_PUBLISHABLE_KEY=%s\n' "$CLERK_PUBLISHABLE_KEY"
+            printf 'CLERK_SECRET_KEY=%s\n' "$CLERK_SECRET_KEY"
+            printf 'CLOUDINARY_CLOUD_NAME=%s\n' "$CLOUDINARY_CLOUD_NAME"
+            printf 'CLOUDINARY_API_KEY=%s\n' "$CLOUDINARY_API_KEY"
+            printf 'CLOUDINARY_API_SECRET=%s\n' "$CLOUDINARY_API_SECRET"
+            printf 'CLOUDINARY_UPLOAD_PRESET=%s\n' "$CLOUDINARY_UPLOAD_PRESET"
+            printf 'ADMIN_EMAILS=%s\n' "${ADMIN_EMAILS:-}"
+            printf 'WEB_PORT=%s\n' "${WEB_PORT:-8080}"
+            printf 'API_IMAGE_TAG=%s\n' "${{ github.sha }}"
+            printf 'WEB_IMAGE_TAG=%s\n' "${{ github.sha }}"
+          } > .env.deploy
+          chmod 600 .env.deploy
+
+      - name: Upload compose file and env
+        run: |
+          ssh homeserver "mkdir -p '${DEPLOY_PATH}'"
+          scp docker-compose.deploy.yml "homeserver:${DEPLOY_PATH}/docker-compose.deploy.yml"
+          scp .env.deploy "homeserver:${DEPLOY_PATH}/.env"
+
+      - name: Pull images and restart containers
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USER: ${{ github.repository_owner }}
+        run: |
+          ssh homeserver \
+            "GHCR_TOKEN='${GHCR_TOKEN}' \
+             GHCR_USER='${GHCR_USER}' \
+             DEPLOY_PATH='${DEPLOY_PATH}' \
+             bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          cd "$DEPLOY_PATH"
+
+          docker compose -f docker-compose.deploy.yml --env-file .env pull
+          docker compose -f docker-compose.deploy.yml --env-file .env up -d --remove-orphans
+          docker image prune -f
+          REMOTE
+
+      - name: Health check
+        run: |
+          ssh homeserver \
+            "DEPLOY_PATH='${DEPLOY_PATH}' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          set -a
+          # shellcheck disable=SC1091
+          source .env
+          set +a
+          PORT="${WEB_PORT:-8080}"
+          curl -fsS -o /dev/null -w "Web HTTP %{http_code}\n" \
+            --retry 8 --retry-delay 5 --retry-all-errors \
+            "http://127.0.0.1:${PORT}/"
+          curl -fsS -o /dev/null -w "API HTTP %{http_code}\n" \
+            --retry 8 --retry-delay 5 --retry-all-errors \
+            "http://127.0.0.1:${PORT}/health"
+          REMOTE

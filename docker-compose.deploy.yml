@@ -1,0 +1,25 @@
+services:
+  api:
+    image: ghcr.io/${GHCR_OWNER}/naradmuni-api:${API_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+    expose:
+      - "3000"
+    networks:
+      - app
+
+  web:
+    image: ghcr.io/${GHCR_OWNER}/naradmuni-web:${WEB_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
+    networks:
+      - app
+
+networks:
+  app:
