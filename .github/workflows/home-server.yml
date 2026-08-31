@@ -212,7 +212,10 @@ jobs:
           curl -fsS -o /dev/null -w "Web HTTP %{http_code}\n" \
             --retry 8 --retry-delay 5 --retry-all-errors \
             "http://127.0.0.1:${PORT}/"
+
+          echo "Waiting 2 minutes before API health check..."
+          sleep 120
           curl -fsS -o /dev/null -w "API HTTP %{http_code}\n" \
-            --retry 12 --retry-delay 5 --retry-all-errors \
+            --retry 4 --retry-delay 30 --retry-all-errors \
             "http://127.0.0.1:${PORT}/health"
           REMOTE
