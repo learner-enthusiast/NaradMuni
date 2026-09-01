@@ -67,7 +67,7 @@ jobs:
                   build-args: |
                       VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
                       VITE_PUBLIC_APP_URL=${{ secrets.CLIENT_URL }}
-                      VITE_API_URL=${{ secrets.CLIENT_URL }}
+                      VITE_API_URL=${{ secrets.BACKEND_URL }}
                   tags: |
                       ${{ env.WEB_IMAGE }}:latest
                       ${{ env.WEB_IMAGE }}:${{ github.sha }}
@@ -213,7 +213,7 @@ jobs:
                     --retry 8 --retry-delay 5 --retry-all-errors \
                     "http://127.0.0.1:${PORT}/"
 
-                  echo "Waiting 2 minutes before API health check..."
+                  echo "Waiting 10 minutes before API health check..."
                   sleep 600
                   curl -fsS -o /dev/null -w "API HTTP %{http_code}\n" \
                     --retry 4 --retry-delay 30 --retry-all-errors \
