@@ -1,15 +1,18 @@
 # Deploy NaradMuni to a home server via GHCR + SSH (Cloudflare Access).
 #
+# Images are built and pushed to GHCR in CI, then transferred to the home server
+# over SSH (docker save/load) so the server never needs to reach ghcr.io directly.
+#
 # Required GitHub repository secrets:
 #   SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, DEPLOY_PATH
 #   CF_SERVICE_TOKEN_ID, CF_SERVICE_TOKEN_SECRET
-#   GHCR_TOKEN                         (PAT with read:packages, for the home server to pull)
 #   DATABASE_URL                       (external Postgres connection string)
 #   CLIENT_URL                         (public URL, e.g. https://sabha.example.com or http://192.168.1.10:8080)
 #   CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY
 #   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_UPLOAD_PRESET
 #
 # Optional secrets:
+#   BACKEND_URL                        (VITE_API_URL for the web build; leave empty for same-origin /api)
 #   ADMIN_EMAILS                       (comma-separated admin emails)
 #   WEB_PORT                           (defaults to 8080 on the server)
 #
@@ -79,6 +82,9 @@ jobs:
         runs-on: ubuntu-latest
         needs: build-and-push
         if: github.ref == 'refs/heads/main'
+        permissions:
+            contents: read
+            packages: read
         env:
             SSH_HOST: ${{ secrets.SSH_HOST }}
             SSH_USER: ${{ secrets.SSH_USER }}
@@ -171,22 +177,40 @@ jobs:
                   scp docker-compose.deploy.yml "homeserver:${DEPLOY_PATH}/docker-compose.deploy.yml"
                   scp .env.deploy "homeserver:${DEPLOY_PATH}/.env"
 
-            - name: Pull images and restart containers
-              env:
-                  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-                  GHCR_USER: ${{ github.repository_owner }}
+            - uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Pull built images on runner
+              run: |
+                  set -euo pipefail
+                  docker pull "${{ env.API_IMAGE }}:${{ github.sha }}"
+                  docker pull "${{ env.WEB_IMAGE }}:${{ github.sha }}"
+
+            - name: Transfer images to home server
+              run: |
+                  set -euo pipefail
+                  docker save \
+                    "${{ env.API_IMAGE }}:${{ github.sha }}" \
+                    "${{ env.WEB_IMAGE }}:${{ github.sha }}" \
+                    | gzip > naradmuni-images.tar.gz
+                  scp naradmuni-images.tar.gz "homeserver:${DEPLOY_PATH}/naradmuni-images.tar.gz"
+                  ssh homeserver \
+                    "DEPLOY_PATH='${DEPLOY_PATH}' bash -s" <<'REMOTE'
+                  set -euo pipefail
+                  cd "$DEPLOY_PATH"
+                  gunzip -c naradmuni-images.tar.gz | docker load
+                  rm -f naradmuni-images.tar.gz
+                  REMOTE
+
+            - name: Restart containers
               run: |
                   ssh homeserver \
-                    "GHCR_TOKEN='${GHCR_TOKEN}' \
-                     GHCR_USER='${GHCR_USER}' \
-                     DEPLOY_PATH='${DEPLOY_PATH}' \
-                     bash -s" <<'REMOTE'
+                    "DEPLOY_PATH='${DEPLOY_PATH}' bash -s" <<'REMOTE'
                   set -euo pipefail
-
-                  echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
                   cd "$DEPLOY_PATH"
-
-                  docker compose -f docker-compose.deploy.yml --env-file .env pull
                   docker compose -f docker-compose.deploy.yml --env-file .env up -d --remove-orphans
                   docker image prune -f
                   REMOTE
