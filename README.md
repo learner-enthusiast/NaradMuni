@@ -8,7 +8,7 @@ The experience blends mythology-inspired storytelling with modern realtime techn
 
 ## Vision
 
-Naarad Sabha is designed around one core idea:
+Naarad Sabha is designed around one core idea
 
 > Every voice carries meaning.
 
