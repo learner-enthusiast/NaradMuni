@@ -30,6 +30,7 @@ import {
     serializePoll,
 } from './poll.service.js'
 import { createPollInput, submitPollInput } from './poll.validation.js'
+import { schedulePollExpiry } from '../../jobs/expire-polls.js'
 import {
     deleteFromCloudinary,
     uploadToCloudinary,
@@ -118,6 +119,12 @@ export async function createPoll(req: Request, res: Response) {
 
     const loaded = await loadPollForOwner(poll.id, user.id)
     if (!loaded) throw new HttpError(500, 'Poll could not be loaded')
+
+    if (expiresAt) {
+        schedulePollExpiry().catch((error) => {
+            console.error('failed to reschedule poll expiry', error)
+        })
+    }
 
     return res
         .status(201)
@@ -239,6 +246,12 @@ export async function reopenPoll(req: Request, res: Response) {
         pollId: updated.id,
         analytics,
     })
+
+    if (updated.expiresAt) {
+        schedulePollExpiry().catch((error) => {
+            console.error('failed to reschedule poll expiry', error)
+        })
+    }
 
     return res.json({
         poll: serializePoll(updated, loaded.questions),

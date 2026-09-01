@@ -14,7 +14,7 @@ const pool = new Pool({
 })
 
 export const db: NodePgDatabase = drizzle(pool, {
-    logger: true,
+    logger: !isProduction,
 })
 
 // vmMF7wOH1ALi8FUd

@@ -1,9 +1,9 @@
-import { and, eq, lte } from 'drizzle-orm'
+import { and, asc, eq, gt, isNotNull, lte } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { pollsTable } from '../db/schema.js'
 import { getIO } from '../lib/socket.js'
 
-const EXPIRE_POLL_INTERVAL_MS = 60_000
+let expiryTimer: ReturnType<typeof setTimeout> | null = null
 
 export async function expireDuePolls() {
     const expiredAt = new Date()
@@ -41,16 +41,58 @@ export async function expireDuePolls() {
     return expiredPolls
 }
 
+async function getNextExpiryAt() {
+    const [nextPoll] = await db
+        .select({ expiresAt: pollsTable.expiresAt })
+        .from(pollsTable)
+        .where(
+            and(
+                eq(pollsTable.status, 'active'),
+                isNotNull(pollsTable.expiresAt),
+                gt(pollsTable.expiresAt, new Date())
+            )
+        )
+        .orderBy(asc(pollsTable.expiresAt))
+        .limit(1)
+
+    return nextPoll?.expiresAt ?? null
+}
+
+async function runExpiryCycle() {
+    await expireDuePolls()
+    await schedulePollExpiry()
+}
+
+export async function schedulePollExpiry() {
+    if (expiryTimer) {
+        clearTimeout(expiryTimer)
+        expiryTimer = null
+    }
+
+    const nextExpiryAt = await getNextExpiryAt()
+    if (!nextExpiryAt) return
+
+    const delay = Math.max(nextExpiryAt.getTime() - Date.now(), 0)
+
+    expiryTimer = setTimeout(() => {
+        runExpiryCycle().catch((error) => {
+            console.error('poll expiry job failed', error)
+            schedulePollExpiry().catch((retryError) => {
+                console.error('poll expiry reschedule failed', retryError)
+            })
+        })
+    }, delay)
+}
+
 export function startPollExpiryJob() {
-    expireDuePolls().catch((error) => {
+    runExpiryCycle().catch((error) => {
         console.error('poll expiry job failed on startup', error)
+        schedulePollExpiry().catch((retryError) => {
+            console.error('poll expiry reschedule failed', retryError)
+        })
     })
 
-    const timer = setInterval(() => {
-        expireDuePolls().catch((error) => {
-            console.error('poll expiry job failed', error)
-        })
-    }, EXPIRE_POLL_INTERVAL_MS)
-
-    return () => clearInterval(timer)
+    return () => {
+        if (expiryTimer) clearTimeout(expiryTimer)
+    }
 }
