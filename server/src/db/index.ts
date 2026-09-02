@@ -6,7 +6,7 @@ import { Pool } from 'pg'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
-dns.setDefaultResultOrder('ipv6first')
+dns.setDefaultResultOrder('ipv4first')
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
