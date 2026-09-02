@@ -1,4 +1,26 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-naradmuni}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-naradmuni}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-naradmuni} -d ${POSTGRES_DB:-naradmuni}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - app
+
   api:
     image: ghcr.io/${GHCR_OWNER}/naradmuni-api:${API_IMAGE_TAG:-latest}
     restart: unless-stopped
@@ -6,8 +28,12 @@ services:
     environment:
       PORT: 3000
       NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-naradmuni}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-naradmuni}
     expose:
       - "3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -32,5 +58,29 @@ services:
     networks:
       - app
 
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      LOCAL_DATABASE_URL: postgresql://${POSTGRES_USER:-naradmuni}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-naradmuni}
+      NEON_DATABASE_URL: ${NEON_DATABASE_URL:-}
+      BACKUP_HOUR: ${BACKUP_HOUR:-3}
+      BACKUP_RETRIES: ${BACKUP_RETRIES:-5}
+      BACKUP_RETRY_DELAY_SECONDS: ${BACKUP_RETRY_DELAY_SECONDS:-60}
+      BACKUP_HOURLY_RETRY_SECONDS: ${BACKUP_HOURLY_RETRY_SECONDS:-3600}
+    volumes:
+      - ./docker/backup-to-neon.sh:/usr/local/bin/backup-to-neon.sh:ro
+      - ./docker/backup-entrypoint.sh:/usr/local/bin/backup-entrypoint.sh:ro
+    entrypoint: ["/usr/local/bin/backup-entrypoint.sh"]
+    networks:
+      - app
+
 networks:
   app:
+
+volumes:
+  pgdata:
