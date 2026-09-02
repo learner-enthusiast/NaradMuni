@@ -8,6 +8,7 @@ import { pollRouter } from './modules/poll/poll.routes.js'
 import { adminRouter } from './modules/admin/admin.routes.js'
 import { registerSocketHandlers } from './socket/index.js'
 import { env } from './env.js'
+import { pool } from './db/index.js'
 import { initIO } from './lib/socket.js'
 import { errorHandler } from './lib/http.js'
 import { startPollExpiryJob } from './jobs/expire-polls.js'
@@ -63,7 +64,9 @@ async function main() {
 
     const shutdown = () => {
         stopPollExpiryJob()
-        server.close(() => process.exit(0))
+        server.close(() => {
+            pool.end().finally(() => process.exit(0))
+        })
     }
 
     process.once('SIGINT', shutdown)
